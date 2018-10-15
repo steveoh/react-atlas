@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import './FindAddress.css';
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
 
-class FindAddress extends Component {
+export default class FindAddress extends Component {
   constructor(props) {
     super(props);
 
@@ -14,13 +14,22 @@ class FindAddress extends Component {
       found: true
     };
 
+    // https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes
     this.geocodeAddress = this.geocodeAddress.bind(this);
     this.request = null;
+    this.zoomLevel = this.props.zoomLevel || 12;
+    this.apiKey = this.props.apiKey;
+    this.wkid = this.props.wkid || 3857;
+    this.inline = this.props.inline || false;
+
+    if (!this.apiKey) {
+      console.warn('agrc-widgets/dart-board/FindAddress: ApiKey is empty. Widget will not function.');
+    }
   }
 
   render() {
     return (
-      <Form className="find-address">
+      <Form className={this.inline ? 'form-inline find-address' : 'find-address'}>
         <FormGroup>
           <Label for="address">Street Address</Label>
           <Input type="text" value={this.state.street} onChange={(e) => this.handleChange('street', e)} />
@@ -39,7 +48,7 @@ class FindAddress extends Component {
     )
   }
 
-  geocodeAddress() {
+  async geocodeAddress() {
     console.info('FindAddress.geocodeAddress');
     if (!this.validate()) {
       return false;
@@ -50,14 +59,20 @@ class FindAddress extends Component {
       this.request = null;
     }
 
-    this.request = this.fetch({
+    this.request = true;
+
+    const response = await this.fetch({
       street: this.state.street,
       zone: this.state.zone
     });
+
+    const location = await this.extractResponse(response);
+
+    return this.props.onFindAddress(location);
   }
 
   fetch(options) {
-    const url = `//api.mapserv.utah.gov/api/v1/Geocode/${options.street}/${options.zone}?`;
+    const url = `https://api.mapserv.utah.gov/api/v1/Geocode/${options.street}/${options.zone}?`;
 
     const query = {
       apiKey: this.props.apiKey,
@@ -70,9 +85,34 @@ class FindAddress extends Component {
       .replace(/%20/g, '+');
 
     return fetch(url + querystring, {
-      query: options,
-      handleAs: 'json'
+      query: options
     });
+  }
+
+  async extractResponse(response) {
+    this.request = null;
+
+    if (!response.ok) {
+      return this.props.onFindAddressError(response);
+    }
+
+    let result = await response.json();
+
+    if (result.status !== 200) {
+      return this.props.onFindAddressError(response);
+    }
+
+    result = result.result;
+
+    var point = {
+      x: result.location.x,
+      y: result.location.y,
+      spatialReference: {
+        wkid: this.wkid
+      }
+    }
+
+    return point;
   }
 
   validate() {
@@ -86,12 +126,10 @@ class FindAddress extends Component {
 
     this.setState(newState);
 
-    return propsToValidate.every(key => this.state[key + 'IsValid'] === true);
+    return propsToValidate.every(key => newState[key + 'IsValid'] === true);
   }
 
   handleChange(value, event) {
     this.setState({ [value]: event.target.value });
   }
 }
-
-export default FindAddress
