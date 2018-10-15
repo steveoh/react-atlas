@@ -1,7 +1,7 @@
 import { Map, MapView } from 'arcgis-wrapper';
 import React, { Component } from 'react';
 
-export default class ReactSceneView extends Component {
+export default class ReactMapView extends Component {
   constructor() {
     super();
     this.map = new Map({
@@ -25,14 +25,6 @@ export default class ReactSceneView extends Component {
         components: []
       }
     });
-
-    view.watch('center', this._onCenterChange.bind(this));
-  }
-
-  _onCenterChange(center) {
-    if (typeof this.props.onCenterChange === 'function') {
-      this.props.onCenterChange(center.toJSON());
-    }
   }
 
   render() {

@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
+import MapView from './components/esrijs/MapView';
 import './App.css';
 
 export default class App extends Component {
@@ -19,7 +20,6 @@ export default class App extends Component {
     return (
       <div className="app">
         <Header title="Atlas Utah" version="4.0.0"/>
-        <MapLens />
         <Sidebar>
           Data and services provided by <a href="http://gis.utah.gov">Utah AGRC</a>
           <p>Click a location on the map for more information</p>
@@ -55,6 +55,9 @@ export default class App extends Component {
             </div>
           </div>
         </Sidebar>
+        <MapLens>
+            <MapView />
+        </MapLens>
       </div>
     );
   }

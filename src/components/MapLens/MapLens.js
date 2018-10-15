@@ -1,8 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import './MapLens.css';
-import ReactMapView from './ReactMapView';
 
-class MapLens extends Component {
+export default class MapLens extends Component {
   constructor() {
     super();
     this.state = {
@@ -20,26 +19,8 @@ class MapLens extends Component {
           data-dojo-attach-event="click:toggleSidebar">
           <span className="glyphicon glyphicon-chevron-left" id="sideBarToggle"></span>
         </button>
-        <Fragment>
-          <ReactMapView
-            onCenterChange={center => {
-              this.setState({ center });
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              backgroundColor: "white"
-            }}
-          >
-            center :<br /> x={this.state.center.x} <br />y={this.state.center.y}
-          </div>
-        </Fragment>
+        {this.props.children}
       </div>
     );
   }
 }
-
-export default MapLens;
