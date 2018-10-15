@@ -32,12 +32,12 @@ export default class FindAddress extends Component {
       <Form className={this.inline ? 'form-inline find-address' : 'find-address'}>
         <FormGroup>
           <Label for="address">Street Address</Label>
-          <Input type="text" value={this.state.street} onChange={(e) => this.handleChange('street', e)} />
+          <Input type="text" value={this.state.street} onChange={(e) => this.handleChange('street', e)} onKeyPress={this.handleKeyPress} />
           <FormText color="danger" className={this.state.streetIsValid ? 'find-address__help-block' : ''}>Required!</FormText>
         </FormGroup>
         <FormGroup>
           <Label for="zone">Zip or City</Label>
-          <Input type="text" value={this.state.zone} onChange={(e) => this.handleChange('zone', e)} />
+          <Input type="text" value={this.state.zone} onChange={(e) => this.handleChange('zone', e)} onKeyPress={this.handleKeyPress} />
           <FormText color="danger" className={this.state.zoneIsValid ? 'find-address__help-block' : ''}>Required!</FormText>
         </FormGroup>
         <FormGroup>
@@ -46,6 +46,12 @@ export default class FindAddress extends Component {
         </FormGroup>
       </Form>
     )
+  }
+
+  handleKeyPress = async (event) => {
+    if (event.key === 'Enter') {
+      await this.geocodeAddress();
+    }
   }
 
   async geocodeAddress() {
@@ -93,12 +99,16 @@ export default class FindAddress extends Component {
     this.request = null;
 
     if (!response.ok) {
+      this.setState({ found: false });
+
       return this.props.onFindAddressError(response);
     }
 
     let result = await response.json();
 
     if (result.status !== 200) {
+      this.setState({ found: false });
+
       return this.props.onFindAddressError(response);
     }
 
@@ -123,6 +133,8 @@ export default class FindAddress extends Component {
 
       return accum;
     }, {});
+
+    newState.found = true;
 
     this.setState(newState);
 
