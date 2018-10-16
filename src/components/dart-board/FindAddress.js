@@ -1,32 +1,32 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types';
 import './FindAddress.css';
 import { Point } from 'arcgis-wrapper'
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
 
 export default class FindAddress extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    street: '2236 atkin ave',
+    zone: 'slc',
+    streetIsValid: true,
+    zoneIsValid: true,
+    found: true
+  };
 
-    this.state = {
-      street: '',
-      zone: '',
-      streetIsValid: true,
-      zoneIsValid: true,
-      found: true
-    };
+  find = this.find.bind(this);
 
-    // https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes
-    this.find = this.find.bind(this);
-    this.request = null;
-    this.apiKey = this.props.apiKey;
-    this.wkid = this.props.wkid || 3857;
-    this.inline = this.props.inline || false;
-    this.component = 'FindAddress';
+  static propTypes = {
+    apiKey: PropTypes.string.isRequired,
+    onFindAddress: PropTypes.func.isRequired,
+    onFindAddressError: PropTypes.func,
+    wkid: PropTypes.number,
+    inline: PropTypes.bool
+  };
 
-    if (!this.apiKey) {
-      console.warn('agrc-widgets/dart-board/FindAddress: ApiKey is empty. Widget will not function.');
-    }
-  }
+  static defaultProps = {
+    wkid: 3857,
+    inline: false
+  };
 
   render() {
     return (
@@ -47,7 +47,7 @@ export default class FindAddress extends Component {
         </FormGroup>
       </Form>
     )
-  }
+  };
 
   async find() {
     console.info('FindAddress.find');
@@ -55,22 +55,15 @@ export default class FindAddress extends Component {
       return false;
     }
 
-    if (this.request) {
-      this.request.cancel('duplicate in flight');
-      this.request = null;
-    }
-
-    this.request = true;
-
     const response = await this.fetch({
       street: this.state.street,
       zone: this.state.zone
     });
 
-    const location = await this.extractResponse(response);
+    let location = await this.extractResponse(response);
 
     return this.props.onFindAddress(location);
-  }
+  };
 
   fetch(options) {
     const url = `https://api.mapserv.utah.gov/api/v1/Geocode/${options.street}/${options.zone}?`;
@@ -88,11 +81,9 @@ export default class FindAddress extends Component {
     return fetch(url + querystring, {
       query: options
     });
-  }
+  };
 
   async extractResponse(response) {
-    this.request = null;
-
     if (!response.ok) {
       this.setState({ found: false });
 
@@ -113,12 +104,12 @@ export default class FindAddress extends Component {
       x: result.location.x,
       y: result.location.y,
       spatialReference: {
-        wkid: this.wkid
+        wkid: this.props.wkid
       }
     });
 
     return point;
-  }
+  };
 
   validate() {
     const propsToValidate = ['street', 'zone'];
@@ -134,15 +125,15 @@ export default class FindAddress extends Component {
     this.setState(newState);
 
     return propsToValidate.every(key => newState[key + 'IsValid'] === true);
-  }
+  };
 
   handleChange(value, event) {
     this.setState({ [value]: event.target.value });
-  }
+  };
 
   handleKeyPress = async (event) => {
     if (event.key === 'Enter') {
       await this.find();
     }
-  }
-}
+  };
+};
