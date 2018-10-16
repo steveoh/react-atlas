@@ -10,8 +10,9 @@ export default class ReactMapView extends Component {
     });
   }
 
-  zoomTo(point) {
-    this.view.goTo(point);
+  zoomTo(zoomObj) {
+    this.view.goTo(zoomObj);
+    this.view.graphics.add(zoomObj.target);
   }
 
   componentDidMount() {
@@ -44,6 +45,9 @@ export default class ReactMapView extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    this.zoomTo({ target: this.props.zoomToPoint.point, zoom: this.props.zoomToPoint.zoom });
+    this.zoomTo({
+      target: this.props.zoomToGraphic.graphic,
+      zoom: this.props.zoomToGraphic.level
+    });
   }
 }

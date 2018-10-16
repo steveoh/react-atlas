@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 import './FindAddress.css';
-import { Point } from 'arcgis-wrapper'
+import { Graphic } from 'arcgis-wrapper'
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
 
 export default class FindAddress extends Component {
@@ -20,7 +20,8 @@ export default class FindAddress extends Component {
     onFindAddress: PropTypes.func.isRequired,
     onFindAddressError: PropTypes.func,
     wkid: PropTypes.number,
-    inline: PropTypes.bool
+    inline: PropTypes.bool,
+    pointSymbol: PropTypes.object
   };
 
   static defaultProps = {
@@ -100,15 +101,21 @@ export default class FindAddress extends Component {
 
     result = result.result;
 
-    var point = new Point({
+    const point = {
+      type: 'point',
       x: result.location.x,
       y: result.location.y,
       spatialReference: {
         wkid: this.props.wkid
       }
+    };
+
+    const graphic = new Graphic({
+      geometry: point,
+      symbol: this.props.pointSymbol
     });
 
-    return point;
+    return graphic;
   };
 
   validate() {

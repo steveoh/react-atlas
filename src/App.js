@@ -13,11 +13,11 @@ export default class App extends Component {
 
   onFindAddress = this.onFindAddress.bind(this);
 
-  onFindAddress(point) {
+  onFindAddress(graphic) {
     this.setState({
-      zoomToPoint: {
-        point,
-        zoom: 18
+      zoomToGraphic: {
+        graphic: graphic,
+        level: 18
       }
     });
   };
@@ -33,7 +33,17 @@ export default class App extends Component {
   render() {
     const findAddressOptions = {
       apiKey: 'AGRC-Explorer',
-      wkid: 3857
+      wkid: 3857,
+      symbol: {
+        type: 'simple-marker',  // autocasts as new SimpleMarkerSymbol()
+        style: 'diamond',
+        color: 'blue',
+        size: '8px',  // pixels
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: [255, 255, 0],
+          width: 3  // points
+        }
+      }
     };
 
     return (
@@ -46,6 +56,7 @@ export default class App extends Component {
           <h4>Find Address</h4>
           <div id="geocodeNode">
             <FindAddress
+              pointSymbol={findAddressOptions.symbol}
               apiKey={findAddressOptions.apiKey}
               onFindAddress={this.onFindAddress}
               onFindAddressError={this.onFindAddressError} />
@@ -73,7 +84,7 @@ export default class App extends Component {
           </div>
         </Sidebar>
         <MapLens>
-          <MapView zoomToPoint={this.state.zoomToPoint} />
+          <MapView zoomToGraphic={this.state.zoomToGraphic} />
         </MapLens>
       </div>
     );
