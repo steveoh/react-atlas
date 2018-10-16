@@ -6,8 +6,12 @@ export default class ReactMapView extends Component {
     super();
 
     this.map = new Map({
-      basemap: 'dark-gray'
+      basemap: 'dark-gray-vector'
     });
+  }
+
+  zoomTo(point) {
+    this.view.goTo(point);
   }
 
   componentDidMount() {
@@ -37,5 +41,9 @@ export default class ReactMapView extends Component {
         }}
       />
     );
+  }
+
+  componentDidUpdate(prevProps) {
+    this.zoomTo({ target: this.props.zoomToPoint.point, zoom: this.props.zoomToPoint.zoom });
   }
 }

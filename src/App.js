@@ -7,22 +7,27 @@ import MapView from './components/esrijs/MapView';
 import './App.css';
 
 export default class App extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    zoomToPoint: {
+      point: { x: 0, y: 0 },
+      zoom: 18
+    }
+  };
 
-    this.onFindAddress = this.onFindAddress.bind(this);
-  }
+  onFindAddress = this.onFindAddress.bind(this);
 
   onFindAddress(point) {
-    this.mapView.view.goTo({
-      target: point,
-      zoom: 18
+    this.setState({
+      zoomToPoint: {
+        point,
+        zoom: 18
+      }
     });
-  }
+  };
 
   onFindAddressError(e) {
     console.error(e);
-  }
+  };
 
   toggle() {
 
@@ -45,7 +50,6 @@ export default class App extends Component {
           <div id="geocodeNode">
             <FindAddress
               apiKey={findAddressOptions.apiKey}
-              wkid={findAddressOptions.wkid}
               onFindAddress={this.onFindAddress}
               onFindAddressError={this.onFindAddressError} />
           </div>
@@ -72,7 +76,7 @@ export default class App extends Component {
           </div>
         </Sidebar>
         <MapLens>
-          <MapView ref={mapView => { this.mapView = mapView; }}/>
+          <MapView zoomToPoint={this.state.zoomToPoint} />
         </MapLens>
       </div>
     );
