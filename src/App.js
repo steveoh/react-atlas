@@ -35,13 +35,13 @@ export default class App extends Component {
       apiKey: 'AGRC-Explorer',
       wkid: 3857,
       symbol: {
-        type: 'simple-marker',  // autocasts as new SimpleMarkerSymbol()
+        type: 'simple-marker',
         style: 'diamond',
-        color: 'blue',
-        size: '8px',  // pixels
-        outline: {  // autocasts as new SimpleLineSymbol()
-          color: [255, 255, 0],
-          width: 3  // points
+        color: [130, 65, 47, 0.5],
+        size: '18px',
+        outline: {
+          color: [230, 126, 21, 0.7],
+          width: 1
         }
       }
     };
