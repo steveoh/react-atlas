@@ -9,10 +9,27 @@ import './App.css';
 export default class App extends Component {
   constructor(props) {
     super(props);
+
+    this.onFindAddress = this.onFindAddress.bind(this);
   }
+
+  onFindAddress(point) {
+    this.mapView.view.goTo({
+      target: point,
+      zoom: 18
+    });
+  }
+
+  onFindAddressError(e) {
+    console.error(e);
+  }
+
+  toggle() {
+
+  }
+
   render() {
-    const findAddress = {
-      zoomLevel: 12,
+    const findAddressOptions = {
       apiKey: 'AGRC-Explorer',
       wkid: 3857
     };
@@ -21,17 +38,16 @@ export default class App extends Component {
       <div className="app">
         <Header title="Atlas Utah" version="4.0.0"/>
         <Sidebar>
-          Data and services provided by <a href="http://gis.utah.gov">Utah AGRC</a>
+          <small>Data and services provided by <a href="http://gis.utah.gov">Utah AGRC</a></small>
           <p>Click a location on the map for more information</p>
 
           <h4>Find Address</h4>
           <div id="geocodeNode">
             <FindAddress
-              apiKey={findAddress.apiKey}
-              wkid={findAddress.wkid}
-              zoomLevel={findAddress.zoomLevel}
-              onFind={findAddress.onFind}
-              onError={this.props.onError} />
+              apiKey={findAddressOptions.apiKey}
+              wkid={findAddressOptions.wkid}
+              onFindAddress={this.onFindAddress}
+              onFindAddressError={this.onFindAddressError} />
           </div>
 
           <h4>Find Point of Interest</h4>
@@ -43,9 +59,9 @@ export default class App extends Component {
           <div className="panel panel-default">
             <div className="panel-heading" role="tab">
               <h4 className="panel-title">
-                <a role="button" data-toggle="collapse" data-target="#collapseExport" className="collapsed">
+                <button onClick={this.toggle} className="collapsed">
                   Export Map
-                </a>
+                </button>
               </h4>
             </div>
             <div id="collapseExport" className="panel-collapse collapse" role="tabpanel">
@@ -56,7 +72,7 @@ export default class App extends Component {
           </div>
         </Sidebar>
         <MapLens>
-            <MapView />
+          <MapView ref={mapView => { this.mapView = mapView; }}/>
         </MapLens>
       </div>
     );

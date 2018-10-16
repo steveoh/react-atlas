@@ -4,13 +4,14 @@ import React, { Component } from 'react';
 export default class ReactMapView extends Component {
   constructor() {
     super();
+
     this.map = new Map({
       basemap: 'dark-gray'
     });
   }
 
   componentDidMount() {
-    var view = new MapView({
+    this.view = new MapView({
       container: this.mapViewDiv,
       map: this.map,
       zoom: 4,
