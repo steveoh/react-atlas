@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import './FindAddress.css';
+import { Point } from 'arcgis-wrapper'
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
 
 export default class FindAddress extends Component {
@@ -15,12 +16,12 @@ export default class FindAddress extends Component {
     };
 
     // https://reactjs.org/docs/typechecking-with-proptypes.html#proptypes
-    this.geocodeAddress = this.geocodeAddress.bind(this);
+    this.find = this.find.bind(this);
     this.request = null;
-    this.zoomLevel = this.props.zoomLevel || 12;
     this.apiKey = this.props.apiKey;
     this.wkid = this.props.wkid || 3857;
     this.inline = this.props.inline || false;
+    this.component = 'FindAddress';
 
     if (!this.apiKey) {
       console.warn('agrc-widgets/dart-board/FindAddress: ApiKey is empty. Widget will not function.');
@@ -41,21 +42,15 @@ export default class FindAddress extends Component {
           <FormText color="danger" className={this.state.zoneIsValid ? 'find-address__help-block' : ''}>Required!</FormText>
         </FormGroup>
         <FormGroup>
-          <Button color="outline-dark" onClick={this.geocodeAddress}>Find</Button>
+          <Button color="outline-dark" onClick={this.find}>Find</Button>
           <FormText color="danger" className={this.state.found ? 'find-address__help-block' : ''}>No match found!</FormText>
         </FormGroup>
       </Form>
     )
   }
 
-  handleKeyPress = async (event) => {
-    if (event.key === 'Enter') {
-      await this.geocodeAddress();
-    }
-  }
-
-  async geocodeAddress() {
-    console.info('FindAddress.geocodeAddress');
+  async find() {
+    console.info('FindAddress.find');
     if (!this.validate()) {
       return false;
     }
@@ -114,13 +109,13 @@ export default class FindAddress extends Component {
 
     result = result.result;
 
-    var point = {
+    var point = new Point({
       x: result.location.x,
       y: result.location.y,
       spatialReference: {
         wkid: this.wkid
       }
-    }
+    });
 
     return point;
   }
@@ -143,5 +138,11 @@ export default class FindAddress extends Component {
 
   handleChange(value, event) {
     this.setState({ [value]: event.target.value });
+  }
+
+  handleKeyPress = async (event) => {
+    if (event.key === 'Enter') {
+      await this.find();
+    }
   }
 }
