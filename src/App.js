@@ -8,10 +8,7 @@ import './App.css';
 
 export default class App extends Component {
   state = {
-    zoomToPoint: {
-      point: { x: 0, y: 0 },
-      zoom: 18
-    }
+    zoomToPoint: {}
   };
 
   onFindAddress = this.onFindAddress.bind(this);
