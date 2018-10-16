@@ -2,13 +2,9 @@ import { Map, MapView } from 'arcgis-wrapper';
 import React, { Component } from 'react';
 
 export default class ReactMapView extends Component {
-  constructor() {
-    super();
-
-    this.map = new Map({
-      basemap: 'dark-gray-vector'
-    });
-  }
+  map = new Map({
+    basemap: 'dark-gray-vector'
+  });
 
   zoomTo(zoomObj) {
     this.view.goTo(zoomObj);
@@ -28,7 +24,7 @@ export default class ReactMapView extends Component {
         spatialReference: 3857
       },
       ui: {
-        components: []
+        components: ['zoom']
       }
     });
   }
