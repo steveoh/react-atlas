@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import './MapLens.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 
 export default class MapLens extends Component {
   constructor() {
