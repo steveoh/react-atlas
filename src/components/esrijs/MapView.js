@@ -6,9 +6,18 @@ export default class ReactMapView extends Component {
     basemap: 'dark-gray-vector'
   });
 
+  displayedZoomGraphic = null;
+
   zoomTo(zoomObj) {
     this.view.goTo(zoomObj);
-    this.view.graphics.add(zoomObj.target);
+
+    if (this.displayedZoomGraphic) {
+      this.view.graphics.remove(this.displayedZoomGraphic);
+    }
+
+    this.displayedZoomGraphic = zoomObj.target;
+
+    this.view.graphics.add(this.displayedZoomGraphic);
   }
 
   componentDidMount() {
