@@ -43,7 +43,7 @@ export default class FindAddress extends Component {
           <FormText color="danger" className={this.state.zoneIsValid ? 'find-address__help-block' : ''}>Required!</FormText>
         </FormGroup>
         <FormGroup>
-          <Button color="outline-dark" onClick={this.find}>Find</Button>
+          <Button outline color="dark" onClick={this.find}>Find</Button>
           <FormText color="danger" className={this.state.found ? 'find-address__help-block' : ''}>No match found!</FormText>
         </FormGroup>
       </Form>
