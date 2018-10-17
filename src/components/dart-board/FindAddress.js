@@ -26,7 +26,9 @@ export default class FindAddress extends Component {
 
   static defaultProps = {
     wkid: 3857,
-    inline: false
+    inline: false,
+    onFindAddressError: (error) => console.error(error),
+    onFindAddress: (response) => console.log(response)
   };
 
   render() {
