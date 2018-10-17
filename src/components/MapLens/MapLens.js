@@ -15,7 +15,7 @@ export default class MapLens extends Component {
     return (
       <div id="centerContainer" className={'map-lens map-lens--with-border ' + (this.state.sideBarOpen ? 'map-lens--side-bar-open' : '')}>
         <Button size="sm" color="info" className="map-lens__sidebar btn btn-default btn-xs" onClick={this.toggleSidebar}>
-          <FontAwesomeIcon icon={faChevronLeft} size="xs" flip={this.state.sideBarOpen ? null : 'horizontal'} />
+          {this.state.sideBarOpen ? <FontAwesomeIcon icon={faChevronLeft} size='xs' /> : <FontAwesomeIcon icon={faChevronLeft} size='xs' flip='horizontal' /> }
         </Button>
         {this.props.children}
       </div>
