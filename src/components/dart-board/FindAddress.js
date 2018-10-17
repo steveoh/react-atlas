@@ -33,7 +33,7 @@ export default class FindAddress extends Component {
 
   render() {
     return (
-      <Form className={this.inline ? 'form-inline find-address' : 'find-address'}>
+      <Form className={'find-address ' + (this.inline ? 'form-inline' : '')}>
         <FormGroup>
           <Label for="address">Street Address</Label>
           <Input type="text" value={this.state.street} onChange={(e) => this.handleChange('street', e)} onKeyPress={this.handleKeyPress} />
