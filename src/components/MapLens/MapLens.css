@@ -3,10 +3,19 @@
   top: 75px;
   bottom: 5px;
   right: 5px;
+  left: 5px;
   overflow: hidden;
 }
 
-.map-lens-side-bar--open {
+.map-lens__sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  margin: -5px;
+}
+
+.map-lens--side-bar-open {
   left: 310px;
 }
 
