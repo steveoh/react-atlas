@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 import './FindAddress.css';
-import { Graphic } from 'arcgis-wrapper'
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
+import { Graphic } from 'arcgis-wrapper';
+import Helpers from '../../Helpers';
 
 export default class FindAddress extends Component {
   state = {
@@ -76,14 +77,9 @@ export default class FindAddress extends Component {
       spatialReference: this.props.wkid
     };
 
-    const querystring = Object.keys(query)
-      .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(query[key]))
-      .join('&')
-      .replace(/%20/g, '+');
+    const querystring = Helpers.toQueryString(query);
 
-    return fetch(url + querystring, {
-      query: options
-    });
+    return fetch(url + querystring);
   };
 
   async extractResponse(response) {
