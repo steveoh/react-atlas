@@ -1,5 +1,5 @@
-import { Map, MapView } from 'arcgis-wrapper';
 import React, { Component } from 'react';
+import { Map, MapView } from 'arcgis-wrapper';
 
 export default class ReactMapView extends Component {
   map = new Map({
@@ -36,6 +36,11 @@ export default class ReactMapView extends Component {
         components: ['zoom']
       }
     });
+
+
+    this.view.on('click', (e) => {
+      this.props.onClick(e);
+    });
   }
 
   render() {
@@ -50,9 +55,14 @@ export default class ReactMapView extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    this.zoomTo({
-      target: this.props.zoomToGraphic.graphic,
-      zoom: this.props.zoomToGraphic.level
-    });
+    const currentGraphic = (((this.props || false).zoomToGraphic || false).graphic || false);
+    const previousGraphic = (((prevProps || false).zoomToGraphic || false).graphic || false);
+
+    if (currentGraphic !== previousGraphic && currentGraphic !== false) {
+      this.zoomTo({
+        target: this.props.zoomToGraphic.graphic,
+        zoom: this.props.zoomToGraphic.level
+      });
+    }
   }
 }
