@@ -4,27 +4,50 @@ import Sidebar from './components/Sidebar';
 import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
 import MapView from './components/esrijs/MapView';
+import { IdentifyInformation, IdentifyContainer } from './components/Identify';
 import './App.css';
 
 export default class App extends Component {
   state = {
-    zoomToPoint: {}
+    zoomToPoint: {
+      zoomToGraphic: {
+        graphic: {},
+        level: 0
+      }
+    },
+    mapClick: {},
+    showIdentify: false
   };
 
   onFindAddress = this.onFindAddress.bind(this);
+  onMapClick = this.onMapClick.bind(this);
+  showIdentify = this.showIdentify.bind(this);
 
   onFindAddress(graphic) {
     this.setState({
       zoomToGraphic: {
         graphic: graphic,
         level: 18
-      }
+      },
+      showIdentify: false,
+      mapClick: {}
     });
   };
 
   onFindAddressError(e) {
     console.error(e);
   };
+
+  onMapClick(event) {
+    this.setState({
+      showIdentify: true,
+      mapClick: event.mapPoint
+    });
+  }
+
+  showIdentify(value) {
+    this.setState({ showIdentify: value });
+  }
 
   toggle() {
 
@@ -84,8 +107,13 @@ export default class App extends Component {
           </div>
         </Sidebar>
         <MapLens>
-          <MapView zoomToGraphic={this.state.zoomToGraphic} />
+          <MapView zoomToGraphic={this.state.zoomToGraphic} onClick={this.onMapClick} />
         </MapLens>
+        {this.state.showIdentify ?
+          <IdentifyContainer show={this.showIdentify}>
+            <IdentifyInformation apiKey={findAddressOptions.apiKey} location={this.state.mapClick} />
+          </IdentifyContainer>
+        : null}
       </div>
     );
   }
