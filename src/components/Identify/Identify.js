@@ -2,16 +2,16 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import './Identify.css';
 import { Navbar, Container, Col } from 'reactstrap';
-import { projection } from 'arcgis-wrapper';
 import Helpers from '../../Helpers';
+import { loadModules } from 'esri-loader';
 
 class IdentifyInformation extends Component {
   state = {
     county: 'loading...',
     municipality: 'loading...',
     landOwner: 'loading...',
-    utmX: 0,
-    utmY: 0,
+    x: 0,
+    y: 0,
     zip: '00000',
     address: 'loading...',
     lat: 0,
@@ -57,7 +57,8 @@ class IdentifyInformation extends Component {
 
   outside = 'Outside of Utah';
 
-  requests = [
+
+ requests = [
     [
       this.featureClassNames.counties,
       this.fieldNames.NAME,
@@ -161,36 +162,44 @@ class IdentifyInformation extends Component {
     });
   }
 
-  identify() {
+  async identify() {
     console.log('identifying');
+
     this.fetch(this.requests, this.props.location);
-    this.projectPoint(this.props.location, 4326);
-    this.projectPoint(this.props.location, 26912);
+    const ll = await this.projectPoint(this.props.location, 4326);
+    const utm = await this.projectPoint(this.props.location, 26912);
+
+    const decimalPlaces = 100000;
+    const lat = Math.round(ll.x * decimalPlaces) / decimalPlaces;
+    const lon = Math.round(ll.y * decimalPlaces) / decimalPlaces;
+
+    const x = Math.round(utm.x);
+    const y = Math.round(utm.y);
+
+    this.setState({
+      lat,
+      lon,
+      x,
+      y,
+      googleMapsLink: `https://www.google.com/maps?q&layer=c&cbll=${lon},${lat}`
+    });
   }
 
-  projectPoint(mapPoint, srid) {
-    // if (projection.isSupported()) {
-    //   console.log('supported', mapPoint, srid);
-      // promise = projection.load().then(() => {
-      //   // lat/long coords
-      //   const ll = projection.project(evt.mapPoint, { wkid: 4326 });
-      //   const decimalPlaces = 100000;
-      //   this.lng.innerHTML = Math.round(ll.x * decimalPlaces) / decimalPlaces;
-      //   this.lat.innerHTML = Math.round(ll.y * decimalPlaces) / decimalPlaces;
+  async projectPoint(mapPoint, srid) {
+    const [projection] = await loadModules(['esri/geometry/projection']);
+    // lat/long coords
+    console.log("loaded: ", projection.isLoaded());
+    console.log("supported: ", projection.isSupported())
 
-      //   // utm coords
-      //   const utm = projection.project(evt.mapPoint, { wkid: 26912 });
-      //   const utmx = Math.round(utm.x);
-      //   const utmy = Math.round(utm.y);
-      //   this.utmX.innerHTML = utmx;
-      //   this.utmY.innerHTML = utmy;
+    await projection.load();
 
-      //   this.googleMapsLink.href = `https://www.google.com/maps?q&layer=c&cbll=${ll.y},${ll.x}`;
-      // }
+    console.log(projection.isLoaded())
+
+    return projection.project(mapPoint, { wkid: srid });
   }
 
-  componentDidMount() {
-    this.identify();
+  async componentDidMount() {
+    await this.identify();
   }
 
   componentDidUpdate(prevProps) {
@@ -207,7 +216,7 @@ class IdentifyInformation extends Component {
       <Container fluid className="identify">
         <Col md="3" sm="6" xs="6">
           <p>UTM 12 NAD83 Coordinates</p>
-          <p className="identify--muted">{ this.state.utmX }, {this.state.utmY}</p>
+          <p className="identify--muted">{ this.state.x }, {this.state.y}</p>
         </Col>
         <Col md="3" sm="6" xs="6">
           <p>Approximate Street Address</p>
@@ -241,7 +250,7 @@ class IdentifyInformation extends Component {
           <p>Elevation Meters</p>
           <p className="identify--muted">{this.state.elevMeters}</p>
         </Col>
-        <Col>
+        <Col md="3" sm="6" xs="6">
           <p>Elevation Feet</p>
           <p className="identify--muted">{this.state.elevFeet}</p>
         </Col>

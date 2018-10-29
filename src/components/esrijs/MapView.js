@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
-import { Map, MapView } from 'arcgis-wrapper';
+import { loadModules, loadCss } from 'esri-loader';
 
 export default class ReactMapView extends Component {
-  map = new Map({
-    basemap: 'dark-gray-vector'
-  });
-
   displayedZoomGraphic = null;
 
   zoomTo(zoomObj) {
@@ -20,7 +16,14 @@ export default class ReactMapView extends Component {
     this.view.graphics.add(this.displayedZoomGraphic);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    loadCss('https://js.arcgis.com/4.9/esri/css/main.css');
+    const [Map, MapView] = await loadModules(['esri/Map', 'esri/views/MapView']);
+
+    this.map = new Map({
+      basemap: 'dark-gray-vector'
+    });
+
     this.view = new MapView({
       container: this.mapViewDiv,
       map: this.map,
@@ -36,7 +39,6 @@ export default class ReactMapView extends Component {
         components: ['zoom']
       }
     });
-
 
     this.view.on('click', (e) => {
       this.props.onClick(e);

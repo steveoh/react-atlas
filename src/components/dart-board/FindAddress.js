@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types';
 import './FindAddress.css';
 import { Button, Form, FormGroup, FormText, Label, Input, } from 'reactstrap';
-import { Graphic } from 'arcgis-wrapper';
+import { loadModules } from 'esri-loader';
 import Helpers from '../../Helpers';
 
 export default class FindAddress extends Component {
@@ -107,6 +107,8 @@ export default class FindAddress extends Component {
         wkid: this.props.wkid
       }
     };
+
+    const [Graphic] = await loadModules(['esri/Graphic']);
 
     const graphic = new Graphic({
       geometry: point,
