@@ -138,7 +138,7 @@ class IdentifyInformation extends Component {
   ];
 
   async fetch(requestMetadata, mapPoint) {
-    await requestMetadata.forEach(async item => {
+    requestMetadata.forEach(async item => {
 
       const url = `${this.urls.search}/${item[0]}/${item[1]}?`;
       const query = Helpers.toQueryString({
@@ -160,10 +160,24 @@ class IdentifyInformation extends Component {
 
       item[2](data);
     });
+
+    this.reverseGeocode(mapPoint);
   }
 
   async identify() {
     console.log('identifying');
+
+    this.setState({
+      county: 'loading...',
+      municipality: 'loading...',
+      landOwner: 'loading...',
+      x: 0,
+      y: 0,
+      zip: '00000',
+      address: 'loading...',
+      lat: 0,
+      lon: 0
+    });
 
     this.fetch(this.requests, this.props.location);
     const ll = await this.projectPoint(this.props.location, 4326);
@@ -182,6 +196,28 @@ class IdentifyInformation extends Component {
       x,
       y,
       googleMapsLink: `https://www.google.com/maps?q&layer=c&cbll=${lon},${lat}`
+    });
+  }
+
+  async reverseGeocode(point) {
+    const distanceInMeters = 50;
+    const url = `https://api.mapserv.utah.gov/api/v1/geocode/reverse/${point.x}/${point.y}/?`;
+    const query = Helpers.toQueryString({
+      apiKey: this.props.apiKey,
+      distance: distanceInMeters,
+      spatialReference: 3857
+    });
+
+    const response = await fetch(url + query);
+    let result = await response.json();
+    let address = 'No house address found.';
+
+    if (response.status === 200 && result.status === 200 && result.result.address) {
+      address = result.result.address.street;
+    }
+
+    this.setState({
+      address
     });
   }
 
