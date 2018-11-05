@@ -18,6 +18,9 @@ class IdentifyInformation extends Component {
     lon: 0
   };
 
+  controller = new AbortController();
+  signal = this.controller.signal;
+
   static propTypes = {
     apiKey: PropTypes.string.isRequired,
     wkid: PropTypes.number
@@ -148,7 +151,7 @@ class IdentifyInformation extends Component {
         spatialReference: this.props.wkid
       });
 
-      const response = await fetch(url + query);
+      const response = await fetch(url + query, { signal: this.signal });
       let result = await response.json();
       result = result.result;
 
@@ -208,7 +211,7 @@ class IdentifyInformation extends Component {
       spatialReference: 3857
     });
 
-    const response = await fetch(url + query);
+    const response = await fetch(url + query, { signal: this.signal });
     let result = await response.json();
     let address = 'No house address found.';
 
@@ -245,6 +248,10 @@ class IdentifyInformation extends Component {
     if (currentLocation !== previousLocation && currentLocation !== false) {
       this.identify();
     }
+  }
+
+  componentWillUnmount() {
+    this.controller.abort();
   }
 
   render() {
