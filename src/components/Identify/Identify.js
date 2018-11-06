@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import './Identify.css';
 import { Navbar, Container, Col } from 'reactstrap';
@@ -60,47 +60,46 @@ class IdentifyInformation extends Component {
 
   outside = 'Outside of Utah';
 
-
- requests = [
+  requests = [
     [
       this.featureClassNames.counties,
       this.fieldNames.NAME,
       (data) => {
         if (!data) {
-          this.setState({county: this.outside});
+          this.setState({ county: this.outside });
 
           return;
         }
-        this.setState({county: data[this.fieldNames.NAME]});
+        this.setState({ county: data[this.fieldNames.NAME] });
       }
     ], [
       this.featureClassNames.municipalities,
       this.fieldNames.NAME,
       (data) => {
         if (!data) {
-          this.setState({municipality: 'Unincorporated'});
+          this.setState({ municipality: 'Unincorporated' });
 
           return;
         }
-        this.setState({municipality: data[this.fieldNames.NAME]});
+        this.setState({ municipality: data[this.fieldNames.NAME] });
       }
     ], [
       this.featureClassNames.landOwnership,
       this.fieldNames.STATE_LGD,
       (data) => {
         if (!data) {
-          this.setState({landOwner: this.outside});
+          this.setState({ landOwner: this.outside });
 
           return;
         }
-        this.setState({landOwner: data[this.fieldNames.STATE_LGD]});
+        this.setState({ landOwner: data[this.fieldNames.STATE_LGD] });
       }
     ], [
       this.featureClassNames.nationalGrid,
       this.fieldNames.GRID1Mil + ',' + this.fieldNames.GRIS100K,
       (data) => {
         if (!data) {
-          this.setState({nationalGrid: this.outside});
+          this.setState({ nationalGrid: this.outside });
 
           return;
         }
@@ -109,36 +108,86 @@ class IdentifyInformation extends Component {
           data[this.fieldNames.GRID1Mil],
           data[this.fieldNames.GRIS100K], data.x, data.y
         ];
-        this.setState({nationalGrid: ('{0} {1} {2} {3}', values)});
+        this.setState({ nationalGrid: ('{0} {1} {2} {3}', values) });
       }
     ], [
       this.featureClassNames.dem,
       this.fieldNames.FEET + ',' + this.fieldNames.METERS,
       (data) => {
         if (!data) {
-          this.setState({elevFeet: this.outside});
-          this.setState({elevMeters: this.outside});
+          this.setState({ elevFeet: this.outside });
+          this.setState({ elevMeters: this.outside });
 
           return;
         }
 
-        this.setState({elevFeet: data[this.fieldNames.FEET]});
-        this.setState({elevMeters: data[this.fieldNames.METERS]});
+        this.setState({ elevFeet: data[this.fieldNames.FEET] });
+        this.setState({ elevMeters: data[this.fieldNames.METERS] });
       }
     ], [
       this.featureClassNames.zip,
       this.fieldNames.ZIP5,
       (data) => {
         if (!data) {
-          this.setState({zip: this.outside});
+          this.setState({ zip: this.outside });
 
           return;
         }
 
-        this.setState({zip: data[this.fieldNames.ZIP5]});
+        this.setState({ zip: data[this.fieldNames.ZIP5] });
       }
     ]
   ];
+
+  render() {
+    return (
+      <Container fluid className="identify">
+        <Col md="3" sm="6" xs="6">
+          <p>UTM 12 NAD83 Coordinates</p>
+          <p className="identify--muted">{this.state.x}, {this.state.y}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>Approximate Street Address</p>
+          <p className="identify--muted">{this.state.address}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>Zip Code</p>
+          <p className="identify--muted">{this.state.zip}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>Land Administration Category</p>
+          <p className="identify--muted">{this.state.landOwner}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>WGS84 Coordinates</p>
+          <p className="identify--muted">{this.state.lat}, {this.state.lon}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>City</p>
+          <p className="identify--muted">{this.state.municipality}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>County</p>
+          <p className="identify--muted">{this.state.county}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>US National Grid</p>
+          <p className="identify--muted">{this.state.nationalGrid}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>Elevation Meters</p>
+          <p className="identify--muted">{this.state.elevMeters}</p>
+        </Col>
+        <Col md="3" sm="6" xs="6">
+          <p>Elevation Feet</p>
+          <p className="identify--muted">{this.state.elevFeet}</p>
+        </Col>
+        <Col>
+          <a href={this.state.googleMapsLink} className="text-info" target="_blank" rel="noopener noreferrer">Google Street View (opens in new window)</a>
+        </Col>
+      </Container>
+    );
+  }
 
   async fetch(requestMetadata, mapPoint) {
     requestMetadata.forEach(async item => {
@@ -253,59 +302,9 @@ class IdentifyInformation extends Component {
   componentWillUnmount() {
     this.controller.abort();
   }
-
-  render() {
-    return (
-      <Container fluid className="identify">
-        <Col md="3" sm="6" xs="6">
-          <p>UTM 12 NAD83 Coordinates</p>
-          <p className="identify--muted">{ this.state.x }, {this.state.y}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Approximate Street Address</p>
-          <p className="identify--muted">{this.state.address}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Zip Code</p>
-          <p className="identify--muted">{this.state.zip}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Land Administration Category</p>
-          <p className="identify--muted">{this.state.landOwner}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>WGS84 Coordinates</p>
-          <p className="identify--muted">{this.state.lat}, {this.state.lon}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>City</p>
-          <p className="identify--muted">{this.state.municipality}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>County</p>
-          <p className="identify--muted">{this.state.county}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>US National Grid</p>
-          <p className="identify--muted">{this.state.nationalGrid}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Elevation Meters</p>
-          <p className="identify--muted">{this.state.elevMeters}</p>
-        </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Elevation Feet</p>
-          <p className="identify--muted">{this.state.elevFeet}</p>
-        </Col>
-        <Col>
-          <a href={this.state.googleMapsLink} className="text-info" target="_blank" rel="noopener noreferrer">Google Street View (opens in new window)</a>
-        </Col>
-      </Container>
-    );
-  }
 }
 
-class IdentifyContainer extends Component {
+class IdentifyContainer extends PureComponent {
   close = this.close.bind(this);
 
   close() {
