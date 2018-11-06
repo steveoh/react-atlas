@@ -11,16 +11,36 @@ export default class ReactMapView extends Component {
   };
   discoverKey = 'career-exhibit-panel-stadium';
 
-  zoomTo(zoomObj) {
-    this.view.goTo(zoomObj);
+  async zoomTo(zoomObj) {
+    console.log('app.zoomTo', arguments);
+
+    if (!Array.isArray(zoomObj.target)) {
+      zoomObj.target = [zoomObj.target];
+    }
+
+    if (!zoomObj.zoom) {
+      zoomObj = {
+        target: zoomObj.target
+      };
+    }
+
+    await this.view.goTo(zoomObj);
 
     if (this.displayedZoomGraphic) {
-      this.view.graphics.remove(this.displayedZoomGraphic);
+      this.view.graphics.removeMany(this.displayedZoomGraphic);
     }
 
     this.displayedZoomGraphic = zoomObj.target;
 
-    this.view.graphics.add(this.displayedZoomGraphic);
+    this.view.graphics.addMany(zoomObj.target);
+
+    const [watchUtils] = await loadModules(['esri/core/watchUtils']);
+
+    if (!zoomObj.preserve) {
+      watchUtils.once(this.view, 'extent', () => {
+        this.view.graphics.removeAll();
+      });
+    }
   }
 
   async componentDidMount() {
@@ -104,7 +124,8 @@ export default class ReactMapView extends Component {
     if (currentGraphic !== previousGraphic && currentGraphic !== false) {
       this.zoomTo({
         target: this.props.zoomToGraphic.graphic,
-        zoom: this.props.zoomToGraphic.level
+        zoom: this.props.zoomToGraphic.level,
+        preserve: this.props.zoomToGraphic.preserve
       });
     }
   }

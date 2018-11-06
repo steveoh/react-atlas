@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
+import { Sherlock, WebApiProvider } from './components/Sherlock/Sherlock';
 import MapView from './components/esrijs/MapView';
 import { IdentifyInformation, IdentifyContainer } from './components/Identify';
 import './App.css';
@@ -22,6 +23,7 @@ export default class App extends Component {
   onFindAddress = this.onFindAddress.bind(this);
   onMapClick = this.onMapClick.bind(this);
   showIdentify = this.showIdentify.bind(this);
+  onSherlockMatch = this.onSherlockMatch.bind(this);
 
   onFindAddress(graphic) {
     this.setState({
@@ -49,8 +51,22 @@ export default class App extends Component {
     this.setState({ showIdentify: value });
   }
 
-  toggle() {
+  onSherlockMatch(graphics) {
+    // summary:
+    //      Zooms to the passed in graphic(s).
+    // graphics: esri.Graphic[]
+    //      The esri.Graphic(s) that you want to zoom to.
+    // tags:
+    //      private
+    console.log('sherlock:zoom', arguments);
 
+    // check for point feature
+    this.setState({
+      zoomToGraphic: {
+        graphic: graphics,
+        preserve: false
+      }
+    });
   }
 
   render() {
@@ -69,6 +85,22 @@ export default class App extends Component {
       }
     };
 
+    const gnisSherlock = {
+      provider: new WebApiProvider('AGRC-Explorer', 'SGID10.LOCATION.PlaceNamesGNIS2010', 'NAME', {
+        contextField: 'COUNTY'
+      }),
+      placeHolder: 'place name ...',
+      maxResultsToDisplay: 10,
+      onSherlockMatch: this.onSherlockMatch
+    }
+
+    const citySherlock = {
+      provider: new WebApiProvider('AGRC-Explorer', 'SGID10.BOUNDARIES.Municipalities', 'NAME'),
+      placeHolder: 'city name ...',
+      maxResultsToDisplay: 10,
+      onSherlockMatch: this.onSherlockMatch
+    }
+
     return (
       <div className="app">
         <Header title="Atlas Utah" version="4.0.0"/>
@@ -86,10 +118,14 @@ export default class App extends Component {
           </div>
 
           <h4>Find Point of Interest</h4>
-          <div id="gnisNode"></div>
+          <div style={{paddingBottom: '1em'}}>
+            <Sherlock {...gnisSherlock}></Sherlock>
+          </div>
 
           <h4>Find City</h4>
-          <div id="cityNode"></div>
+          <div style={{ paddingBottom: '1em' }}>
+            <Sherlock {...citySherlock}></Sherlock>
+          </div>
 
           <div className="panel panel-default">
             <div className="panel-heading" role="tab">
