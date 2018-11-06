@@ -20,7 +20,7 @@ class LayerSelectorItem extends PureComponent {
 
     return (
       <div className="layer-selector-item radio checkbox">
-        <label className="layer-selector--item" >
+        <label className="layer-selector--item">
           <input className="layer-selector-item-input" {...inputOptions} checked={this.props.selected} onChange={(event) => this.props.onChange(event, this.props)} />
           {inputOptions.value}
         </label>
