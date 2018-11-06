@@ -105,7 +105,7 @@ export default class App extends Component {
       <div className="app">
         <Header title="Atlas Utah" version="4.0.0"/>
         <Sidebar>
-          <small>Data and services provided by <a href="http://gis.utah.gov">Utah AGRC</a></small>
+          <small>Data and services provided by <a href="https://gis.utah.gov/ ">Utah AGRC</a></small>
           <p>Click a location on the map for more information</p>
 
           <h4>Find Address</h4>
