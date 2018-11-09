@@ -59,10 +59,16 @@ export default class FindAddress extends Component {
       return false;
     }
 
-    const response = await this.fetch({
-      street: this.state.street,
-      zone: this.state.zone
-    });
+    let response;
+
+    try {
+      response = await this.fetch({
+        street: this.state.street,
+        zone: this.state.zone
+      });
+    } catch (err) {
+      console.log(response.text());
+    }
 
     let location = await this.extractResponse(response);
 
@@ -79,7 +85,10 @@ export default class FindAddress extends Component {
 
     const querystring = Helpers.toQueryString(query);
 
-    return fetch(url + querystring);
+    return fetch(url + querystring, {
+      method: 'GET',
+      mode: 'cors'
+    });
   };
 
   async extractResponse(response) {

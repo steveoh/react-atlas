@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
 import './Header.css';
 import logo from './agrc_logo.jpg';
 
-class Header extends React.Component {
+export default class Header extends PureComponent {
   render() {
     return (
       <div className="app__header">
@@ -15,5 +15,3 @@ class Header extends React.Component {
     )
   }
 }
-
-export default Header;

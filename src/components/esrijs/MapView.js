@@ -9,7 +9,17 @@ export default class ReactMapView extends Component {
     landownership: 'https://gis.trustlands.utah.gov/server/' +
       '/rest/services/Ownership/UT_SITLA_Ownership_LandOwnership_WM/FeatureServer/0'
   };
-  discoverKey = 'career-exhibit-panel-stadium';
+
+  render() {
+    return (
+      <div
+        style={{ height: '100%', width: '100%' }}
+        ref={mapViewDiv => {
+          this.mapViewDiv = mapViewDiv;
+        }}
+      />
+    );
+  }
 
   async zoomTo(zoomObj) {
     console.log('app.zoomTo', arguments);
@@ -84,7 +94,7 @@ export default class ReactMapView extends Component {
 
     const layerSelectorOptions = {
       view: this.view,
-      quadWord: this.discoverKey,
+      quadWord: this.props.discoverKey,
       baseLayers: ['Hybrid', 'Lite', 'Terrain', 'Topo', 'Color IR'],
       overlays: ['Address Points', {
         Factory: FeatureLayer,
@@ -101,20 +111,7 @@ export default class ReactMapView extends Component {
       </LayerSelectorContainer>,
       selectorNode);
 
-    this.view.on('click', (e) => {
-      this.props.onClick(e);
-    });
-  }
-
-  render() {
-    return (
-      <div
-        style={{ height: '100%', width: '100%' }}
-        ref={mapViewDiv => {
-          this.mapViewDiv = mapViewDiv;
-        }}
-      />
-    );
+    this.view.on('click', this.props.onClick);
   }
 
   componentDidUpdate(prevProps) {
