@@ -6,9 +6,263 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import Helpers from '../../Helpers'
 import escapeRegExp from 'lodash.escaperegexp';
-import uniqWith from 'lodash.uniqwith';
+import debounce from "lodash.debounce";
 import sortBy from 'lodash.sortby';
+import uniqWith from 'lodash.uniqwith';
 import { loadModules } from 'esri-loader';
+import Downshift from 'downshift';
+import isEqual from "react-fast-compare";
+
+class SherklockDownshift extends Component {
+
+  static defaultProps = {
+    symbols: {
+      polygon: {
+        type: 'simple-fill',
+        outline: {
+          style: 'dash-dot',
+          color: [255, 255, 0],
+          width: 1.5
+        }
+      },
+      line: {
+        type: 'simple-line',
+        style: 'solid',
+        color: [255, 255, 0],
+        width: 5
+      },
+      point: {
+        type: 'simple-marker',
+        style: 'circle',
+        color: [255, 255, 0, 0.5],
+        size: 10
+      }
+    }
+  };
+
+  itemToString = this.itemToString.bind(this);
+  handleStateChange = this.handleStateChange.bind(this);
+
+  async handleStateChange(feature) {
+    const { provider, symbols, onSherlockMatch } = this.props;
+
+    const searchValue = feature.attributes[provider.searchField];
+
+    let contextValue;
+    if (provider.contextField) {
+      contextValue = feature.attributes[provider.contextField];
+    }
+
+    const response = await provider.getFeature(searchValue, contextValue);
+
+    const [Graphic] = await loadModules(['esri/Graphic']);
+
+    const results = response.data;
+
+    const graphics = results.map(feature =>
+      (new Graphic({
+        geometry: feature.geometry,
+        attributes: feature.attributes,
+        symbol: symbols[feature.geometry.type]
+      }))
+    );
+
+    onSherlockMatch(graphics);
+  };
+
+  itemToString(item) {
+    console.log('Clue:itemToString', arguments);
+    const { searchField } = this.props.provider;
+
+    return item ? item.attributes[searchField]: '';
+  }
+
+  render() {
+    console.log('SherlockDownshift:render', arguments);
+    const props = {
+      itemToString: this.itemToString,
+      onChange: this.handleStateChange
+    };
+
+    return (
+      <Downshift {...props}>
+        {({
+          getInputProps,
+          getItemProps,
+          highlightedIndex,
+          isOpen,
+          inputValue,
+          getMenuProps
+        }) => (
+            <div>
+              <h4>{this.props.label}</h4>
+              <div style={{ paddingBottom: '1em' }}>
+                <InputGroup>
+                  <Input {...getInputProps()} placeholder={this.props.placeHolder}></Input>
+                  <InputGroupAddon addonType="append">
+                    <Button size="sm" color="secondary" disabled>
+                      <FontAwesomeIcon icon={faSearch} size="lg"></FontAwesomeIcon>
+                    </Button>
+                  </InputGroupAddon>
+                </InputGroup>
+                <div className="sherlock__match-dropdown" {...getMenuProps()}>
+                  <ul className="sherlock__matches">
+                    {!isOpen ?
+                      null :
+                      <Clue clue={inputValue} provider={this.props.provider} maxresults={this.props.maxResultsToDisplay}>
+                        {({ short, hasmore, loading, error, data = [] }) => {
+                          if (short) {
+                            return <li className="sherlock__match-item alert-primary" disabled>Type more than 2 letters.</li>;
+                          }
+
+                          // if (loading) {
+                          //   return <li className="sherlock__match-item alert-primary" disabled>Loading...</li>;
+                          // }
+
+                          if (error) {
+                            return <li className="sherlock__match-item alert-danger" disabled>Error! ${error}</li>;
+                          }
+
+                          if (!data.length) {
+                            return <li className="sherlock__match-item alert-warning" disabled>No items found.</li>;
+                          }
+
+                          let items = data.map((item, index) => (
+                          <li {...getItemProps({
+                              key: index,
+                              className: 'sherlock__match-item' + (highlightedIndex === index ? ' sherlock__match-item--selected' : ''),
+                              item,
+                              index
+                            })}>
+                              <Highlighted text={item.attributes[this.props.provider.searchField]} highlight={inputValue}></Highlighted>
+                              <div>{item.attributes[this.props.provider.contextField] || ''}</div>
+                            </li>
+                          ));
+
+                          if (hasmore) {
+                            items.push(
+                              <li key="toomany" className="sherlock__match-item alert-primary text-center" disabled>More than {this.props.maxResultsToDisplay} items found.</li>
+                            );
+                          }
+
+                          return items;
+                        }}
+                      </Clue>
+                    }
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+      </Downshift>
+    )
+  }
+}
+
+class Clue extends Component {
+  state = {
+    data: undefined,
+    loading: false,
+    error: false,
+    short: true,
+    hasmore: false
+  };
+
+  async componentDidMount() {
+    console.log('Clue:componentDidMount', arguments);
+    await this.fetchData();
+  }
+
+  async componentDidUpdate({ children: _, ...prevProps }) {
+    console.log('Clue:componentDidUpdate', arguments);
+
+    const { children, ...props } = this.props;
+    if (!isEqual(prevProps, props)) {
+      await this.fetchData();
+    }
+  }
+
+  makeNetworkRequest = debounce(async () => {
+    console.log('Clue:makeNetworkRequest', this.props);
+
+    const { clue, provider, maxresults } = this.props;
+    const { searchField, contextField } = provider;
+
+    const response = await provider.search(clue).catch(e => {
+      this.setState({
+        data: undefined,
+        error: e.message,
+        loading: false,
+        short: clue.length <= 2,
+        hasmore: false
+      });
+
+      console.error(e);
+    });
+
+    const iteratee = [`attributes.${searchField}`];
+    let hasContext = false;
+    if (contextField) {
+      iteratee.push(`attributes.${contextField}`);
+      hasContext = true;
+    }
+
+    let features = uniqWith(response.data, (a, b) => {
+      if (hasContext) {
+        return a.attributes[searchField] === b.attributes[searchField] &&
+          a.attributes[contextField] === b.attributes[contextField]
+      } else {
+        return a.attributes[searchField] === b.attributes[searchField];
+      }
+    });
+
+    features = sortBy(features, iteratee);
+    let hasMore = false;
+    if (features.length > maxresults) {
+      features = features.slice(0, maxresults);
+      hasMore = true;
+    }
+
+    this.setState({
+      data: features,
+      loading: false,
+      error: false,
+      short: clue.length <= 2,
+      hasmore: hasMore
+    });
+  });
+
+  async fetchData() {
+    console.log('Clue:fetchData', arguments);
+
+    this.setState({
+      error: false,
+      loading: true,
+      short: this.props.clue.length <= 2,
+      hasmore: false
+    });
+
+    if (this.props.clue.length > 2) {
+      await this.makeNetworkRequest();
+    }
+  };
+
+  render() {
+    console.log('Clue:render', arguments);
+
+    const { children } = this.props;
+    const { short, data, loading, error, hasmore } = this.state;
+
+    return children({
+      short,
+      data,
+      loading,
+      error,
+      hasmore,
+      refetch: this.fetchData
+    });
+  }
+}
 
 class Sherlock extends Component {
   state = {
@@ -559,4 +813,4 @@ class WebApi {
   }
 }
 
-export { Sherlock, WebApiProvider }
+export { Sherlock, WebApiProvider, SherklockDownshift }

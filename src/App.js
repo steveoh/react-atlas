@@ -3,7 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
-import { Sherlock, WebApiProvider } from './components/Sherlock/Sherlock';
+import { Sherlock, SherklockDownshift, WebApiProvider } from './components/Sherlock/Sherlock';
 import MapView from './components/esrijs/MapView';
 import { IdentifyInformation, IdentifyContainer } from './components/Identify';
 import './App.css';
@@ -48,6 +48,7 @@ export default class App extends Component {
       provider: new WebApiProvider(apiKey, 'SGID10.LOCATION.PlaceNamesGNIS2010', 'NAME', {
         contextField: 'COUNTY'
       }),
+      label: 'Find Point of Interest',
       placeHolder: 'place name ...',
       maxResultsToDisplay: 10,
       onSherlockMatch: this.onSherlockMatch
@@ -55,6 +56,7 @@ export default class App extends Component {
 
     const citySherlock = {
       provider: new WebApiProvider(apiKey, 'SGID10.BOUNDARIES.Municipalities', 'NAME'),
+      label: 'Find City',
       placeHolder: 'city name ...',
       maxResultsToDisplay: 10,
       onSherlockMatch: this.onSherlockMatch
@@ -76,15 +78,9 @@ export default class App extends Component {
               onFindAddressError={this.onFindAddressError} />
           </div>
 
-          <h4>Find Point of Interest</h4>
-          <div style={{ paddingBottom: '1em' }}>
-            <Sherlock {...gnisSherlock}></Sherlock>
-          </div>
+          <SherklockDownshift {...gnisSherlock}></SherklockDownshift>
 
-          <h4>Find City</h4>
-          <div style={{ paddingBottom: '1em' }}>
-            <Sherlock {...citySherlock}></Sherlock>
-          </div>
+          <SherklockDownshift {...citySherlock}></SherklockDownshift>
 
           <div className="panel panel-default">
             <div className="panel-heading" role="tab">
