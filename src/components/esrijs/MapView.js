@@ -4,6 +4,7 @@ import { loadModules, loadCss } from 'esri-loader';
 import { LayerSelectorContainer, LayerSelector } from '../../components/LayerSelector/LayerSelector';
 
 export default class ReactMapView extends Component {
+  zoomLevel = 5;
   displayedZoomGraphic = null;
   urls = {
     landownership: 'https://gis.trustlands.utah.gov/server/' +
@@ -29,9 +30,16 @@ export default class ReactMapView extends Component {
     }
 
     if (!zoomObj.zoom) {
-      zoomObj = {
-        target: zoomObj.target
-      };
+      if (zoomObj.target.every(graphic => graphic.geometry.type === 'point')) {
+        zoomObj = {
+          target: zoomObj.target,
+          zoom: this.view.map.basemap.baseLayers.items[0].tileInfo.lods.length - this.zoomLevel
+        };
+      } else {
+        zoomObj = {
+          target: zoomObj.target
+        };
+      }
     }
 
     await this.view.goTo(zoomObj);

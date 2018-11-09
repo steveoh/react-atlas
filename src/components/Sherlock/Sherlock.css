@@ -23,6 +23,11 @@
   color: #fff;
   cursor: pointer;
 }
+.sherlock__match-item[disabled],
+.sherlock__match-item[disabled]:hover {
+  pointer-events: none;
+  justify-content: center;
+}
 .sherlock__message {
   display: block;
   padding: 0.5rem 1rem;
