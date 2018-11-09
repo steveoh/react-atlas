@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import Helpers from '../../Helpers'
 import escapeRegExp from 'lodash.escaperegexp';
+import uniqWith from 'lodash.uniqwith';
+import sortBy from 'lodash.sortby';
 import { loadModules } from 'esri-loader';
 
 class Sherlock extends Component {
@@ -81,11 +83,11 @@ class Sherlock extends Component {
         </InputGroup>
         {
           results.length < 1 ? null :
-          <div className="sherlock__match-dropdown" onMouseEnter={() => this.handleMouse(true)} onMouseLeave={() => this.handleMouse(false)}>
-            <ul className="sherlock__matches" data-dojo-attach-point="matchesList">
-              {results}
-            </ul>
-          </div>
+            <div className="sherlock__match-dropdown" onMouseEnter={() => this.handleMouse(true)} onMouseLeave={() => this.handleMouse(false)}>
+              <ul className="sherlock__matches" data-dojo-attach-point="matchesList">
+                {results}
+              </ul>
+            </div>
         }
       </div>
     )
@@ -322,77 +324,28 @@ class Sherlock extends Component {
 
     try {
       // remove duplicates
-      features = this.sortArray(this.toDistinct(features));
+      const iteratee = [`attributes.${this.props.provider.searchField}`];
+      let hasContext = false;
+      if (this.props.provider.contextField) {
+        iteratee.push(`attributes.${this.props.provider.contextField}`);
+        hasContext = true;
+      }
+
+      features = uniqWith(features, (a, b) => {
+        if (hasContext) {
+          return a.attributes[this.props.provider.searchField] === b.attributes[this.props.provider.searchField] &&
+            a.attributes[this.props.provider.contextField] === b.attributes[this.props.provider.contextField]
+        } else {
+          return a.attributes[this.props.provider.searchField] === b.attributes[this.props.provider.searchField];
+        }
+      });
+
+      features = sortBy(features, iteratee);
 
       return features;
     } catch (e) {
       throw new Error('sherlock.Sherlock_processResults: ' + e.message);
     }
-  }
-
-  sortArray(list) {
-    // summary:
-    //      Sorts the array by both the searchField and contextField
-    //      if there is a contextField specied. If no context field is
-    //      specified, no sorting is done since it's already done on the server
-    //      with the 'ORDER BY' statement. I tried to add a second field to the
-    //      'ORDER BY' statement but ArcGIS Server just choked.
-    console.log('sherlock:sortArray', arguments);
-
-    // custom sort function
-    const sortFeatures = (a, b) => {
-      const searchField = this.props.provider.searchField;
-      const contextField = this.props.provider.contextField;
-
-      if (a.attributes[searchField] === b.attributes[searchField]) {
-        if (a.attributes[contextField] < b.attributes[contextField]) {
-          return -1;
-        }
-
-        return 1;
-      } else if (a.attributes[searchField] < b.attributes[searchField]) {
-        return -1;
-      }
-
-      return 1;
-    }
-
-    // sort features
-    return list.sort(sortFeatures);
-  }
-
-  toDistinct(features) {
-    // summary:
-    //      Removes duplicates from the set of features.
-    // features: Object[]
-    //      The array of features that need to be processed.
-    // returns: Object[]
-    //      The array after it has been processed.
-    // tags:
-    //      private
-    console.log('sherlock:toDistinct', arguments);
-
-    const list = [];
-    features.forEach((f) => {
-      if (list.some((existingF) => {
-        if (existingF.attributes[this.props.provider.searchField] === f.attributes[this.props.provider.searchField]) {
-          if (this.props.provider.contextField) {
-            if (existingF.attributes[this.props.provider.contextField] === f.attributes[this.props.provider.contextField]) {
-              return true;
-            }
-          } else {
-            return true; // there is a match
-          }
-        }
-
-        return false;
-      }, this) === false) {
-        // add item
-        list.push(f);
-      }
-    }, this);
-
-    return list;
   }
 }
 
@@ -470,7 +423,7 @@ class WebApiProvider extends ProviderBase {
     this.webApi = new WebApi(apiKey, this.signal);
   }
 
-   async search(searchString) {
+  async search(searchString) {
     console.log('sherlock.providers.WebAPI:search', arguments);
 
     return await this.webApi.search(this.searchLayer, this.outFields, {
