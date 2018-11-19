@@ -3,7 +3,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
-import { Sherlock, SherklockDownshift, WebApiProvider } from './components/Sherlock/Sherlock';
+import { Sherlock, WebApiProvider } from './components/Sherlock/Sherlock';
 import MapView from './components/esrijs/MapView';
 import { IdentifyInformation, IdentifyContainer } from './components/Identify';
 import './App.css';
@@ -78,9 +78,9 @@ export default class App extends Component {
               onFindAddressError={this.onFindAddressError} />
           </div>
 
-          <SherklockDownshift {...gnisSherlock}></SherklockDownshift>
+          <Sherlock {...gnisSherlock}></Sherlock>
 
-          <SherklockDownshift {...citySherlock}></SherklockDownshift>
+          <Sherlock {...citySherlock}></Sherlock>
 
           <div className="panel panel-default">
             <div className="panel-heading" role="tab">
