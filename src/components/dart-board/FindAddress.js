@@ -7,8 +7,8 @@ import Helpers from '../../Helpers';
 
 export default class FindAddress extends Component {
   state = {
-    street: '2236 atkin ave',
-    zone: 'slc',
+    street: '',
+    zone: '',
     streetIsValid: true,
     zoneIsValid: true,
     found: true
