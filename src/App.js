@@ -76,7 +76,7 @@ export default class App extends Component {
 
     return (
       <div className="app">
-        <Header title="Atlas Utah" version="4.0.0" />
+        <Header title="Atlas Utah" version="5.0.0" />
         {this.state.showIdentify ?
         <IdentifyContainer show={this.showIdentify}>
           <IdentifyInformation apiKey={findAddressOptions.apiKey} location={this.state.mapClick} />
