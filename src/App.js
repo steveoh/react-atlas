@@ -5,7 +5,9 @@ import MapLens from './components/MapLens';
 import FindAddress from './components/dart-board/FindAddress';
 import { Sherlock, WebApiProvider } from './components/Sherlock/Sherlock';
 import MapView from './components/esrijs/MapView';
+import Printer from './components/esrijs/Print';
 import { IdentifyInformation, IdentifyContainer } from './components/Identify';
+import { Collapse, Button, Card } from 'reactstrap';
 import './App.css';
 
 export default class App extends Component {
@@ -17,14 +19,16 @@ export default class App extends Component {
       }
     },
     mapClick: {},
-    showIdentify: false
+    showIdentify: false,
+    showPrint: false
   };
 
   onFindAddress = this.onFindAddress.bind(this);
   onMapClick = this.onMapClick.bind(this);
   showIdentify = this.showIdentify.bind(this);
   onSherlockMatch = this.onSherlockMatch.bind(this);
-
+  togglePrint = this.togglePrint.bind(this);
+  setView = this.setView.bind(this);
 
   render() {
     const quadWord = 'career-exhibit-panel-stadium'; //'opera-event-little-pinball';
@@ -52,7 +56,7 @@ export default class App extends Component {
       placeHolder: 'place name ...',
       maxResultsToDisplay: 10,
       onSherlockMatch: this.onSherlockMatch
-    }
+    };
 
     const citySherlock = {
       provider: new WebApiProvider(apiKey, 'SGID10.BOUNDARIES.Municipalities', 'NAME'),
@@ -60,6 +64,13 @@ export default class App extends Component {
       placeHolder: 'city name ...',
       maxResultsToDisplay: 10,
       onSherlockMatch: this.onSherlockMatch
+    };
+
+    const mapOptions = {
+      discoverKey: quadWord,
+      zoomToGraphic: this.state.zoomToGraphic,
+      onClick: this.onMapClick,
+      setView: this.setView
     }
 
     return (
@@ -82,23 +93,18 @@ export default class App extends Component {
 
           <Sherlock {...citySherlock}></Sherlock>
 
-          <div className="panel panel-default">
-            <div className="panel-heading" role="tab">
-              <h4 className="panel-title">
-                <button onClick={this.toggle} className="collapsed">
-                  Export Map
-                </button>
-              </h4>
-            </div>
-            <div id="collapseExport" className="panel-collapse collapse" role="tabpanel">
-              <div className="panel-body">
-                <div id="printDiv"></div>
-              </div>
-            </div>
-          </div>
+          <Card>
+            <Button block onClick={this.togglePrint}>Export Map</Button>
+            <Collapse isOpen={this.state.showPrint}>
+              {this.state.showPrint ?
+                <Printer view={this.state.mapView}></Printer>
+                : null}
+            </Collapse>
+          </Card>
+
         </Sidebar>
         <MapLens>
-          <MapView discoverKey={quadWord} zoomToGraphic={this.state.zoomToGraphic} onClick={this.onMapClick} />
+          <MapView {...mapOptions} />
         </MapLens>
         {this.state.showIdentify ?
           <IdentifyContainer show={this.showIdentify}>
@@ -115,9 +121,6 @@ export default class App extends Component {
         graphic: graphic,
         level: 18
       }
-      // ,
-      // showIdentify: false,
-      // mapClick: {}
     });
   };
 
@@ -151,6 +154,18 @@ export default class App extends Component {
         graphic: graphics,
         preserve: false
       }
+    });
+  }
+
+  togglePrint() {
+    this.setState({
+      showPrint: !this.state.showPrint
+    });
+  }
+
+  setView(value) {
+    this.setState({
+      mapView: value
     });
   }
 }

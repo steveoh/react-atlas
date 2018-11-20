@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { loadModules, loadCss } from 'esri-loader';
 import { LayerSelectorContainer, LayerSelector } from '../../components/LayerSelector/LayerSelector';
 
+
 export default class ReactMapView extends Component {
   zoomLevel = 5;
   displayedZoomGraphic = null;
@@ -20,6 +21,82 @@ export default class ReactMapView extends Component {
         }}
       />
     );
+  }
+
+  async componentDidMount() {
+    loadCss('https://js.arcgis.com/4.9/esri/css/main.css');
+    const mapRequires = [
+      'esri/Map',
+      'esri/views/MapView',
+      'esri/layers/FeatureLayer'
+    ];
+    const selectorRequires = [
+      'esri/layers/support/LOD',
+      'esri/layers/support/TileInfo',
+      'esri/layers/WebTileLayer',
+      'esri/Basemap'
+    ];
+
+    const [Map, MapView, FeatureLayer, LOD, TileInfo, WebTileLayer, Basemap] = await loadModules(mapRequires.concat(selectorRequires));
+
+    this.map = new Map();
+
+    this.view = new MapView({
+      container: this.mapViewDiv,
+      map: this.map,
+      zoom: 4,
+      extent: {
+        xmax: -11762120.612131765,
+        xmin: -13074391.513731329,
+        ymax: 5225035.106177688,
+        ymin: 4373832.359194187,
+        spatialReference: 3857
+      },
+      ui: {
+        components: ['zoom']
+      }
+    });
+
+    this.props.setView(this.view);
+
+    const selectorNode = document.createElement('div');
+    this.view.ui.add(selectorNode, 'top-right');
+
+    const layerSelectorOptions = {
+      view: this.view,
+      quadWord: this.props.discoverKey,
+      baseLayers: ['Hybrid', 'Lite', 'Terrain', 'Topo', 'Color IR'],
+      overlays: ['Address Points', {
+        Factory: FeatureLayer,
+        url: this.urls.landownership,
+        id: 'Land Ownership',
+        opacity: 0.3
+      }],
+      modules: [LOD, TileInfo, WebTileLayer, Basemap]
+    }
+
+    ReactDOM.render(
+      <LayerSelectorContainer>
+        <LayerSelector {...layerSelectorOptions}></LayerSelector>
+      </LayerSelectorContainer>,
+      selectorNode);
+
+    this.view.on('click', this.props.onClick);
+  }
+
+  componentDidUpdate(prevProps) {
+    const currentGraphic = (((this.props || false).zoomToGraphic || false).graphic || false);
+    const previousGraphic = (((prevProps || false).zoomToGraphic || false).graphic || false);
+
+    if (currentGraphic !== previousGraphic && currentGraphic !== false) {
+      const { graphic, level, preserve } = this.props.zoomToGraphic;
+
+      this.zoomTo({
+        target: graphic,
+        zoom: level,
+        preserve: preserve
+      });
+    }
   }
 
   async zoomTo(zoomObj) {
@@ -61,77 +138,7 @@ export default class ReactMapView extends Component {
     }
   }
 
-  async componentDidMount() {
-    loadCss('https://js.arcgis.com/4.9/esri/css/main.css');
-    const mapRequires = [
-      'esri/Map',
-      'esri/views/MapView',
-      'esri/layers/FeatureLayer'
-    ];
-    const selectorRequires = [
-      'esri/layers/support/LOD',
-      'esri/layers/support/TileInfo',
-      'esri/layers/WebTileLayer',
-      'esri/Basemap'
-    ];
-
-    const [Map, MapView, FeatureLayer, LOD, TileInfo, WebTileLayer, Basemap] = await loadModules(mapRequires.concat(selectorRequires));
-
-    this.map = new Map({
-      basemap: 'dark-gray-vector'
-    });
-
-    window.view = this.view = new MapView({
-      container: this.mapViewDiv,
-      map: this.map,
-      zoom: 4,
-      extent: {
-        xmax: -11762120.612131765,
-        xmin: -13074391.513731329,
-        ymax: 5225035.106177688,
-        ymin: 4373832.359194187,
-        spatialReference: 3857
-      },
-      ui: {
-        components: ['zoom']
-      }
-    });
-
-    const selectorNode = document.createElement('div');
-    this.view.ui.add(selectorNode, 'top-right');
-
-    const layerSelectorOptions = {
-      view: this.view,
-      quadWord: this.props.discoverKey,
-      baseLayers: ['Hybrid', 'Lite', 'Terrain', 'Topo', 'Color IR'],
-      overlays: ['Address Points', {
-        Factory: FeatureLayer,
-        url: this.urls.landownership,
-        id: 'Land Ownership',
-        opacity: 0.3
-      }],
-      modules: [LOD, TileInfo, WebTileLayer, Basemap]
-    }
-
-    ReactDOM.render(
-      <LayerSelectorContainer>
-        <LayerSelector {...layerSelectorOptions}></LayerSelector>
-      </LayerSelectorContainer>,
-      selectorNode);
-
-    this.view.on('click', this.props.onClick);
-  }
-
-  componentDidUpdate(prevProps) {
-    const currentGraphic = (((this.props || false).zoomToGraphic || false).graphic || false);
-    const previousGraphic = (((prevProps || false).zoomToGraphic || false).graphic || false);
-
-    if (currentGraphic !== previousGraphic && currentGraphic !== false) {
-      this.zoomTo({
-        target: this.props.zoomToGraphic.graphic,
-        zoom: this.props.zoomToGraphic.level,
-        preserve: this.props.zoomToGraphic.preserve
-      });
-    }
+  getView() {
+    return this.view;
   }
 }
