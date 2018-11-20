@@ -1,7 +1,10 @@
 import React, { Component, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import './Identify.css';
-import { Navbar, Container, Col } from 'reactstrap';
+import { Container, Col } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+
 import Helpers from '../../Helpers';
 import { loadModules } from 'esri-loader';
 
@@ -121,7 +124,9 @@ class IdentifyInformation extends Component {
           return;
         }
 
-        this.setState({ elevFeet: data[this.fieldNames.FEET] });
+        const feet = Math.round(data[this.fieldNames.FEET] * 100) / 100;
+
+        this.setState({ elevFeet: feet });
         this.setState({ elevMeters: data[this.fieldNames.METERS] });
       }
     ], [
@@ -142,51 +147,73 @@ class IdentifyInformation extends Component {
   render() {
     return (
       <Container fluid className="identify">
-        <Col md="3" sm="6" xs="6">
-          <p>UTM 12 NAD83 Coordinates</p>
+        <Col>
+          <h4>What's here?</h4>
+          <hr />
+        </Col>
+        <Col>
+          <strong>UTM 12 NAD83 Coordinates</strong>
           <p className="identify--muted">{this.state.x}, {this.state.y}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Approximate Street Address</p>
+        <Col>
+          <strong>Approximate Street Address</strong>
           <p className="identify--muted">{this.state.address}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Zip Code</p>
+        <Col>
+          <strong>Zip Code</strong>
           <p className="identify--muted">{this.state.zip}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Land Administration Category</p>
+        <Col>
+          <strong>Land Administration Category</strong>
           <p className="identify--muted">{this.state.landOwner}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>WGS84 Coordinates</p>
+        <Col>
+          <strong>WGS84 Coordinates</strong>
           <p className="identify--muted">{this.state.lat}, {this.state.lon}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>City</p>
+        <Col>
+          <strong>City</strong>
           <p className="identify--muted">{this.state.municipality}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>County</p>
+        <Col>
+          <strong>County</strong>
           <p className="identify--muted">{this.state.county}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>US National Grid</p>
+        <Col>
+          <strong>US National Grid</strong>
           <p className="identify--muted">{this.state.nationalGrid}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Elevation Meters</p>
+        <Col>
+          <strong>Elevation Meters</strong>
           <p className="identify--muted">{this.state.elevMeters}</p>
         </Col>
-        <Col md="3" sm="6" xs="6">
-          <p>Elevation Feet</p>
+        <Col>
+          <strong>Elevation Feet</strong>
           <p className="identify--muted">{this.state.elevFeet}</p>
         </Col>
         <Col>
-          <a href={this.state.googleMapsLink} className="text-info" target="_blank" rel="noopener noreferrer">Google Street View (opens in new window)</a>
+          <a href={this.state.googleMapsLink} className="text-info position-static" target="_blank" rel="noopener noreferrer">Google Street View</a>
+          <FontAwesomeIcon icon={faExternalLinkAlt} className="identify--muted" style={{ marginLeft: '.5em'}}></FontAwesomeIcon>
         </Col>
       </Container>
     );
+  }
+
+  async componentDidMount() {
+    await this.identify();
+  }
+
+  componentDidUpdate(prevProps) {
+    const currentLocation = (((this.props || false).location || false).x || false);
+    const previousLocation = (((prevProps || false).location || false).x || false);
+
+    if (currentLocation !== previousLocation && currentLocation !== false) {
+      this.identify();
+    }
+  }
+
+  componentWillUnmount() {
+    this.controller.abort();
   }
 
   async fetch(requestMetadata, mapPoint) {
@@ -220,15 +247,16 @@ class IdentifyInformation extends Component {
     console.log('identifying');
 
     this.setState({
-      county: 'loading...',
-      municipality: 'loading...',
-      landOwner: 'loading...',
       x: 0,
       y: 0,
-      zip: '00000',
       address: 'loading...',
+      zip: 'loading...',
+      landOwner: 'loading...',
       lat: 0,
-      lon: 0
+      lon: 0,
+      municipality: 'loading...',
+      county: 'loading...',
+      nationalGrid: 'loading...'
     });
 
     this.fetch(this.requests, this.props.location);
@@ -239,8 +267,8 @@ class IdentifyInformation extends Component {
     const lat = Math.round(ll.x * decimalPlaces) / decimalPlaces;
     const lon = Math.round(ll.y * decimalPlaces) / decimalPlaces;
 
-    const x = Math.round(utm.x);
-    const y = Math.round(utm.y);
+    const x = Math.round(utm.x * 100) / 100;
+    const y = Math.round(utm.y * 100) / 100;
 
     this.setState({
       lat,
@@ -285,23 +313,6 @@ class IdentifyInformation extends Component {
 
     return projection.project(mapPoint, { wkid: srid });
   }
-
-  async componentDidMount() {
-    await this.identify();
-  }
-
-  componentDidUpdate(prevProps) {
-    const currentLocation = (((this.props || false).location || false).x || false);
-    const previousLocation = (((prevProps || false).location || false).x || false);
-
-    if (currentLocation !== previousLocation && currentLocation !== false) {
-      this.identify();
-    }
-  }
-
-  componentWillUnmount() {
-    this.controller.abort();
-  }
 }
 
 class IdentifyContainer extends PureComponent {
@@ -313,12 +324,12 @@ class IdentifyContainer extends PureComponent {
 
   render() {
     return (
-      <Navbar dark color="dark" fixed="bottom" className="border-top border-warning">
+      <div className="identify__container side-bar side-bar--with-border side-bar--open">
         <button type="button" className="identify__close" aria-label="Close" onClick={this.close}>
           <span aria-hidden="true">&times;</span>
         </button>
         {this.props.children}
-      </Navbar>
+      </div>
     );
   }
 }

@@ -77,6 +77,11 @@ export default class App extends Component {
     return (
       <div className="app">
         <Header title="Atlas Utah" version="4.0.0" />
+        {this.state.showIdentify ?
+        <IdentifyContainer show={this.showIdentify}>
+          <IdentifyInformation apiKey={findAddressOptions.apiKey} location={this.state.mapClick} />
+        </IdentifyContainer>
+        : null}
         <Sidebar>
           <small>Data and services provided by <a href="https://gis.utah.gov/ ">Utah AGRC</a></small>
           <p>Click a location on the map for more information</p>
@@ -107,11 +112,6 @@ export default class App extends Component {
         <MapLens>
           <MapView {...mapOptions} />
         </MapLens>
-        {this.state.showIdentify ?
-          <IdentifyContainer show={this.showIdentify}>
-            <IdentifyInformation apiKey={findAddressOptions.apiKey} location={this.state.mapClick} />
-          </IdentifyContainer>
-          : null}
       </div>
     );
   }
