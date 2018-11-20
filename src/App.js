@@ -31,8 +31,9 @@ export default class App extends Component {
   setView = this.setView.bind(this);
 
   render() {
-    const quadWord = 'career-exhibit-panel-stadium'; //'opera-event-little-pinball';
-    const apiKey = 'AGRC-Explorer'; //'AGRC-AC122FA9671436';
+    const quadWord = process.env.REACT_APP_DISCOVER;
+    const apiKey = process.env.REACT_APP_WEB_API;
+
     const findAddressOptions = {
       apiKey: apiKey,
       wkid: 3857,

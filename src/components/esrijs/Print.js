@@ -19,6 +19,7 @@ export default class Printer extends Component {
     this.printer = new Print({
       container: this.printDiv,
       view: this.props.view,
+      printServiceUrl: process.env.REACT_APP_PRINT_PROXY,
       templates: [{
         label: 'Portrait (PDF)',
         format: 'PDF',
