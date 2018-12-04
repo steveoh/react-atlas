@@ -19,6 +19,7 @@ export default class App extends Component {
       }
     },
     mapClick: {},
+    sideBarOpen: true,
     showIdentify: false,
     showPrint: false
   };
@@ -28,6 +29,7 @@ export default class App extends Component {
   showIdentify = this.showIdentify.bind(this);
   onSherlockMatch = this.onSherlockMatch.bind(this);
   togglePrint = this.togglePrint.bind(this);
+  toggleSidebar = this.toggleSidebar.bind(this);
   setView = this.setView.bind(this);
 
   render() {
@@ -74,6 +76,11 @@ export default class App extends Component {
       setView: this.setView
     }
 
+    const sidebarOptions = {
+      sideBarOpen: this.state.sideBarOpen,
+      toggleSidebar: this.toggleSidebar
+    }
+
     return (
       <div className="app">
         <Header title="Atlas Utah" version="5.0.0" />
@@ -109,7 +116,7 @@ export default class App extends Component {
           </Card>
 
         </Sidebar>
-        <MapLens>
+        <MapLens {...sidebarOptions}>
           <MapView {...mapOptions} />
         </MapLens>
       </div>
@@ -132,6 +139,7 @@ export default class App extends Component {
   onMapClick(event) {
     this.setState({
       showIdentify: true,
+      sideBarOpen: true,
       mapClick: event.mapPoint
     });
   }
@@ -161,6 +169,12 @@ export default class App extends Component {
   togglePrint() {
     this.setState({
       showPrint: !this.state.showPrint
+    });
+  }
+
+  toggleSidebar() {
+    this.setState(state => {
+      return { sideBarOpen: !state.sideBarOpen };
     });
   }
 
