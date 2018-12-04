@@ -35,6 +35,7 @@ export default class App extends Component {
   render() {
     const quadWord = process.env.REACT_APP_DISCOVER;
     const apiKey = process.env.REACT_APP_WEB_API;
+    const version = process.env.REACT_APP_VERSION;
 
     const findAddressOptions = {
       apiKey: apiKey,
@@ -83,7 +84,7 @@ export default class App extends Component {
 
     return (
       <div className="app">
-        <Header title="Atlas Utah" version="5.0.0" />
+        <Header title="Atlas Utah" version={version} />
         {this.state.showIdentify ?
         <IdentifyContainer show={this.showIdentify}>
           <IdentifyInformation apiKey={findAddressOptions.apiKey} location={this.state.mapClick} />
